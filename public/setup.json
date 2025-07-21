@@ -1,0 +1,11 @@
+{
+    "id": "flowchart-template",
+    "title": "Flowchart Template",
+    "subtitle": "Navigating and narrating complexity through exploration and storytelling",
+    "colors": {
+        "background-color": "#F9F4F0",
+        "intro-background-color": "#F0E6DB",
+        "text-color": "#443C33",
+        "accent-color": "#176659"
+    }
+}

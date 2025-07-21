@@ -1,0 +1,11 @@
+:root {
+  --background-color: 238,238,238;
+  --intro-background-color: 255,255,255;
+  --text-color: 51,51,51;
+  --accent-color: 51,51,51;
+  --invert-filter: none;
+
+  --transition-duration: 0.1s;
+  --transition-duration-long: 0.3s;
+  --transition-timing: ease-in-out;
+}
