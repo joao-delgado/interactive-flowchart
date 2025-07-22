@@ -1,4 +1,3 @@
-
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
@@ -73,7 +72,7 @@ app.get('/api/flowcharts', requireAuth, async (req, res) => {
   try {
     const flowchartsDir = await fs.readdir('flowcharts');
     const flowcharts = [];
-    
+
     for (const dir of flowchartsDir) {
       try {
         const setupPath = path.join('flowcharts', dir, 'setup.json');
@@ -89,7 +88,7 @@ app.get('/api/flowcharts', requireAuth, async (req, res) => {
         console.error(`Error reading flowchart ${dir}:`, error);
       }
     }
-    
+
     res.json(flowcharts);
   } catch (error) {
     res.status(500).json({ error: 'Failed to list flowcharts' });
@@ -103,51 +102,42 @@ app.post('/api/flowcharts', requireAuth, upload.fields([
   { name: 'timestamps', maxCount: 1 }
 ]), async (req, res) => {
   try {
-    // Debug: Log what we're receiving
-    console.log('Received body:', req.body);
-    console.log('Received flowchartId:', req.body.flowchartId);
-    console.log('flowchartId type:', typeof req.body.flowchartId);
-    console.log('flowchartId length:', req.body.flowchartId?.length);
-    
     // Get the custom flowchart ID from form data, trim whitespace, and use UUID if empty
-    const customId = req.body.flowchartId ? req.body.flowchartId.trim() : '';
-    console.log('Custom ID after processing:', customId);
-    console.log('Custom ID length:', customId.length);
-    console.log('Custom ID is truthy:', !!customId);
-    
+    const customId = req.body.flowchartId && req.body.flowchartId.trim() !== '' ? req.body.flowchartId.trim() : '';
     const id = customId || uuidv4();
-    console.log('Final ID used:', id);
-    console.log('Using custom ID?', id === customId);
+
+    console.log(`Creating flowchart with ID: ${id}${customId ? ' (custom)' : ' (auto-generated)'}`);
+
     const flowchartDir = path.join('flowcharts', id);
-    
+
     // Create flowchart directory
     await fs.mkdir(flowchartDir, { recursive: true });
-    
+
     // Copy all files from src directory to flowchart directory
     await copyDirectory('src', path.join(flowchartDir, 'src'));
-    
+
     // Copy main files
     await fs.copyFile('index.html', path.join(flowchartDir, 'index.html'));
     await fs.copyFile('vite.config.js', path.join(flowchartDir, 'vite.config.js'));
     await fs.copyFile('package.json', path.join(flowchartDir, 'package.json'));
-    
+
     // Create public directory in flowchart
     const publicDir = path.join(flowchartDir, 'public');
     await fs.mkdir(publicDir);
-    
+
     // Save uploaded files
     if (req.files.flowchart) {
       await fs.writeFile(path.join(publicDir, 'flowchart.svg'), req.files.flowchart[0].buffer);
     }
-    
+
     if (req.files.narration) {
       await fs.writeFile(path.join(publicDir, 'narration.mp3'), req.files.narration[0].buffer);
     }
-    
+
     if (req.files.timestamps) {
       await fs.writeFile(path.join(publicDir, 'timestamps.txt'), req.files.timestamps[0].buffer);
     }
-    
+
     // Create setup.json in both public (for build) and root (for API access)
     const setup = {
       id: id,
@@ -160,43 +150,43 @@ app.post('/api/flowcharts', requireAuth, upload.fields([
         'accent-color': req.body.accentColor
       }
     };
-    
+
     await fs.writeFile(path.join(publicDir, 'setup.json'), JSON.stringify(setup, null, 2));
     await fs.writeFile(path.join(flowchartDir, 'setup.json'), JSON.stringify(setup, null, 2));
-    
+
     // Create intro.md in both locations
     await fs.writeFile(path.join(publicDir, 'intro.md'), req.body.intro || '');
     await fs.writeFile(path.join(flowchartDir, 'intro.md'), req.body.intro || '');
-    
+
     // Build the flowchart
     const { spawn } = require('child_process');
-    
+
     const buildProcess = spawn('npm', ['run', 'build'], {
       cwd: flowchartDir,
       stdio: 'pipe'
     });
-    
+
     buildProcess.on('close', async (code) => {
       if (code === 0) {
         // Move dist contents to root and clean up
         try {
           const distDir = path.join(flowchartDir, 'dist');
           const files = await fs.readdir(distDir);
-          
+
           for (const file of files) {
             await fs.rename(
               path.join(distDir, file),
               path.join(flowchartDir, file)
             );
           }
-          
+
           // Clean up build files
           await fs.rmdir(distDir);
           await fs.rm(path.join(flowchartDir, 'src'), { recursive: true });
           await fs.rm(path.join(flowchartDir, 'public'), { recursive: true });
           await fs.unlink(path.join(flowchartDir, 'vite.config.js'));
           await fs.unlink(path.join(flowchartDir, 'package.json'));
-          
+
           // Ensure setup.json and intro.md are preserved in root for API access
           if (!await fs.access(path.join(flowchartDir, 'setup.json')).then(() => true).catch(() => false)) {
             await fs.writeFile(path.join(flowchartDir, 'setup.json'), JSON.stringify(setup, null, 2));
@@ -204,13 +194,13 @@ app.post('/api/flowcharts', requireAuth, upload.fields([
           if (!await fs.access(path.join(flowchartDir, 'intro.md')).then(() => true).catch(() => false)) {
             await fs.writeFile(path.join(flowchartDir, 'intro.md'), req.body.intro || '');
           }
-          
+
         } catch (cleanupError) {
           console.error('Cleanup error:', cleanupError);
         }
       }
     });
-    
+
     res.json({ id, url: `/flowcharts/${id}` });
   } catch (error) {
     console.error('Error creating flowchart:', error);
@@ -235,12 +225,12 @@ app.get('/api/flowcharts/:id/data', requireAuth, async (req, res) => {
     const flowchartDir = path.join('flowcharts', req.params.id);
     const setupData = await fs.readFile(path.join(flowchartDir, 'setup.json'), 'utf8');
     const setup = JSON.parse(setupData);
-    
+
     let intro = '';
     try {
       intro = await fs.readFile(path.join(flowchartDir, 'intro.md'), 'utf8');
     } catch {}
-    
+
     res.json({
       ...setup,
       intro,
@@ -258,11 +248,11 @@ app.get('/api/flowcharts/:id/data', requireAuth, async (req, res) => {
 async function copyDirectory(src, dest) {
   await fs.mkdir(dest, { recursive: true });
   const entries = await fs.readdir(src, { withFileTypes: true });
-  
+
   for (const entry of entries) {
     const srcPath = path.join(src, entry.name);
     const destPath = path.join(dest, entry.name);
-    
+
     if (entry.isDirectory()) {
       await copyDirectory(srcPath, destPath);
     } else {
