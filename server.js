@@ -78,16 +78,25 @@ app.get('/api/flowcharts', requireAuth, async (req, res) => {
         const setupPath = path.join('flowcharts', dir, 'setup.json');
         const setupData = await fs.readFile(setupPath, 'utf8');
         const setup = JSON.parse(setupData);
+        
+        // Get directory stats for creation time
+        const dirPath = path.join('flowcharts', dir);
+        const stats = await fs.stat(dirPath);
+        
         flowcharts.push({
           id: dir,
           title: setup.title,
           subtitle: setup.subtitle,
-          url: `/flowcharts/${dir}`
+          url: `/flowcharts/${dir}`,
+          createdAt: stats.mtime
         });
       } catch (error) {
         console.error(`Error reading flowchart ${dir}:`, error);
       }
     }
+
+    // Sort by creation time, most recent first
+    flowcharts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     res.json(flowcharts);
   } catch (error) {
