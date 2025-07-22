@@ -1,0 +1,484 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flowchart Admin</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            background: #176659;
+            color: white;
+            padding: 20px;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .content {
+            padding: 20px;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            border-bottom: 2px solid transparent;
+        }
+        
+        .tab.active {
+            border-bottom-color: #176659;
+            color: #176659;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        input[type="color"] {
+            width: 60px;
+            height: 40px;
+            padding: 0;
+            border: none;
+        }
+        
+        .color-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .color-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .file-input {
+            border: 2px dashed #ddd;
+            padding: 20px;
+            text-align: center;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        
+        .file-input:hover {
+            border-color: #176659;
+        }
+        
+        .file-input.dragover {
+            border-color: #176659;
+            background: #f0f9f7;
+        }
+        
+        .btn {
+            background: #176659;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover {
+            background: #134d43;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .flowchart-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .flowchart-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            background: #f9f9f9;
+        }
+        
+        .flowchart-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Flowchart Admin Panel</h1>
+            <p>Create and manage interactive flowcharts</p>
+        </div>
+        
+        <div class="content">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('create')">Create Flowchart</button>
+                <button class="tab" onclick="switchTab('manage')">Manage Flowcharts</button>
+            </div>
+            
+            <div id="create-tab" class="tab-content active">
+                <h2>Create New Flowchart</h2>
+                <form id="flowchart-form" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label>Flowchart SVG *</label>
+                        <div class="file-input" onclick="document.getElementById('flowchart-file').click()">
+                            <input type="file" id="flowchart-file" name="flowchart" accept=".svg" style="display: none;" required>
+                            <p>Click to upload or drag and drop your flowchart.svg file</p>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Audio Narration (optional)</label>
+                        <div class="file-input" onclick="document.getElementById('narration-file').click()">
+                            <input type="file" id="narration-file" name="narration" accept=".mp3" style="display: none;">
+                            <p>Click to upload or drag and drop your narration.mp3 file</p>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Timestamps (optional)</label>
+                        <div class="file-input" onclick="document.getElementById('timestamps-file').click()">
+                            <input type="file" id="timestamps-file" name="timestamps" accept=".txt" style="display: none;">
+                            <p>Click to upload or drag and drop your timestamps.txt file</p>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="title">Title *</label>
+                        <input type="text" id="title" name="title" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="subtitle">Subtitle</label>
+                        <input type="text" id="subtitle" name="subtitle">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="flowchartId">Flowchart ID (optional)</label>
+                        <input type="text" id="flowchartId" name="flowchartId" placeholder="Leave empty for auto-generated ID">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Colors</label>
+                        <div class="color-group">
+                            <div class="color-input">
+                                <input type="color" id="backgroundColor" name="backgroundColor" value="#F9F4F0">
+                                <label for="backgroundColor">Background Color</label>
+                            </div>
+                            <div class="color-input">
+                                <input type="color" id="introBackgroundColor" name="introBackgroundColor" value="#F0E6DB">
+                                <label for="introBackgroundColor">Intro Background</label>
+                            </div>
+                            <div class="color-input">
+                                <input type="color" id="textColor" name="textColor" value="#443C33">
+                                <label for="textColor">Text Color</label>
+                            </div>
+                            <div class="color-input">
+                                <input type="color" id="accentColor" name="accentColor" value="#176659">
+                                <label for="accentColor">Accent Color</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="intro">Introduction Text (Markdown)</label>
+                        <textarea id="intro" name="intro" placeholder="Enter your introduction text in Markdown format..."></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn">Create Flowchart</button>
+                </form>
+                
+                <div id="loading" class="loading">
+                    <p>Creating flowchart... This may take a few moments.</p>
+                </div>
+            </div>
+            
+            <div id="manage-tab" class="tab-content">
+                <h2>Manage Flowcharts</h2>
+                <div id="flowcharts-list" class="flowchart-list">
+                    <!-- Flowcharts will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentEditingId = null;
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            
+            document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active');
+            document.getElementById(`${tab}-tab`).classList.add('active');
+            
+            if (tab === 'manage') {
+                loadFlowcharts();
+            }
+        }
+
+        function showMessage(message, type = 'success') {
+            const existingMessage = document.querySelector('.success, .error');
+            if (existingMessage) {
+                existingMessage.remove();
+            }
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = type;
+            messageDiv.textContent = message;
+            
+            const content = document.querySelector('.content');
+            content.insertBefore(messageDiv, content.firstChild);
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 5000);
+        }
+
+        document.getElementById('flowchart-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const loading = document.getElementById('loading');
+            
+            loading.style.display = 'block';
+            
+            try {
+                const response = await fetch('/api/flowcharts', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showMessage(`Flowchart created successfully! URL: ${result.url}`);
+                    e.target.reset();
+                    updateFileInputLabels();
+                } else {
+                    showMessage(result.error || 'Failed to create flowchart', 'error');
+                }
+            } catch (error) {
+                showMessage('Error creating flowchart: ' + error.message, 'error');
+            } finally {
+                loading.style.display = 'none';
+            }
+        });
+
+        async function loadFlowcharts() {
+            try {
+                const response = await fetch('/api/flowcharts');
+                const flowcharts = await response.json();
+                
+                const listContainer = document.getElementById('flowcharts-list');
+                
+                if (flowcharts.length === 0) {
+                    listContainer.innerHTML = '<p>No flowcharts found.</p>';
+                    return;
+                }
+                
+                listContainer.innerHTML = flowcharts.map(flowchart => `
+                    <div class="flowchart-card">
+                        <h3>${flowchart.title}</h3>
+                        <p>${flowchart.subtitle || 'No subtitle'}</p>
+                        <p><strong>ID:</strong> ${flowchart.id}</p>
+                        <div class="flowchart-actions">
+                            <a href="${flowchart.url}" target="_blank" class="btn btn-small">View</a>
+                            <button onclick="editFlowchart('${flowchart.id}')" class="btn btn-small">Edit</button>
+                            <button onclick="deleteFlowchart('${flowchart.id}')" class="btn btn-small btn-danger">Delete</button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                showMessage('Error loading flowcharts: ' + error.message, 'error');
+            }
+        }
+
+        async function deleteFlowchart(id) {
+            if (!confirm('Are you sure you want to delete this flowchart? This action cannot be undone.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/flowcharts/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    showMessage('Flowchart deleted successfully');
+                    loadFlowcharts();
+                } else {
+                    showMessage('Failed to delete flowchart', 'error');
+                }
+            } catch (error) {
+                showMessage('Error deleting flowchart: ' + error.message, 'error');
+            }
+        }
+
+        async function editFlowchart(id) {
+            try {
+                const response = await fetch(`/api/flowcharts/${id}/data`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Fill form with existing data
+                    document.getElementById('title').value = data.title || '';
+                    document.getElementById('subtitle').value = data.subtitle || '';
+                    document.getElementById('flowchartId').value = data.id || '';
+                    document.getElementById('backgroundColor').value = data.backgroundColor || '#F9F4F0';
+                    document.getElementById('introBackgroundColor').value = data.introBackgroundColor || '#F0E6DB';
+                    document.getElementById('textColor').value = data.textColor || '#443C33';
+                    document.getElementById('accentColor').value = data.accentColor || '#176659';
+                    document.getElementById('intro').value = data.intro || '';
+                    
+                    currentEditingId = id;
+                    switchTab('create');
+                    showMessage('Editing flowchart. Update the fields and submit to save changes.');
+                } else {
+                    showMessage('Failed to load flowchart data', 'error');
+                }
+            } catch (error) {
+                showMessage('Error loading flowchart: ' + error.message, 'error');
+            }
+        }
+
+        // File input handling
+        function setupFileInput(inputId, labelText) {
+            const input = document.getElementById(inputId);
+            const container = input.parentElement;
+            
+            input.addEventListener('change', (e) => {
+                const fileName = e.target.files[0]?.name;
+                if (fileName) {
+                    container.querySelector('p').textContent = `Selected: ${fileName}`;
+                } else {
+                    container.querySelector('p').textContent = labelText;
+                }
+            });
+            
+            // Drag and drop
+            container.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                container.classList.add('dragover');
+            });
+            
+            container.addEventListener('dragleave', () => {
+                container.classList.remove('dragover');
+            });
+            
+            container.addEventListener('drop', (e) => {
+                e.preventDefault();
+                container.classList.remove('dragover');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    input.files = files;
+                    input.dispatchEvent(new Event('change'));
+                }
+            });
+        }
+
+        function updateFileInputLabels() {
+            document.querySelector('#flowchart-file').parentElement.querySelector('p').textContent = 'Click to upload or drag and drop your flowchart.svg file';
+            document.querySelector('#narration-file').parentElement.querySelector('p').textContent = 'Click to upload or drag and drop your narration.mp3 file';
+            document.querySelector('#timestamps-file').parentElement.querySelector('p').textContent = 'Click to upload or drag and drop your timestamps.txt file';
+        }
+
+        // Initialize file inputs
+        setupFileInput('flowchart-file', 'Click to upload or drag and drop your flowchart.svg file');
+        setupFileInput('narration-file', 'Click to upload or drag and drop your narration.mp3 file');
+        setupFileInput('timestamps-file', 'Click to upload or drag and drop your timestamps.txt file');
+    </script>
+</body>
+</html>
