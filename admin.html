@@ -450,7 +450,9 @@
                     e.target.reset();
                     updateFileInputLabels();
                     switchTab('manage');
-                    loadFlowcharts(); // Reload flowcharts after creating a new one
+                    
+                    // Poll for the flowchart to appear in the list
+                    await waitForFlowchartToAppear(result.id);
                 } else if (response.status === 401) {
                     showMessage('Session expired. Please log in again.', 'error');
                     showLoginForm();
@@ -463,6 +465,43 @@
                 loading.style.display = 'none';
             }
         });
+
+        async function waitForFlowchartToAppear(flowchartId) {
+            const maxAttempts = 30; // Maximum 30 attempts (30 seconds)
+            let attempts = 0;
+            
+            const pollForFlowchart = async () => {
+                attempts++;
+                
+                try {
+                    const response = await fetch('/api/flowcharts');
+                    if (response.ok) {
+                        const flowcharts = await response.json();
+                        const found = flowcharts.find(f => f.id === flowchartId);
+                        
+                        if (found) {
+                            // Flowchart found, reload the list and hide loading
+                            loadFlowcharts();
+                            return;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error polling for flowchart:', error);
+                }
+                
+                // If not found and haven't exceeded max attempts, try again
+                if (attempts < maxAttempts) {
+                    setTimeout(pollForFlowchart, 1000); // Check again in 1 second
+                } else {
+                    // Give up after max attempts
+                    loadFlowcharts();
+                    showMessage('Flowchart creation may still be in progress. Please refresh if it doesn\'t appear.', 'error');
+                }
+            };
+            
+            // Start polling after a short delay
+            setTimeout(pollForFlowchart, 1000);
+        }
 
         async function loadFlowcharts() {
             if (!isAuthenticated) {
