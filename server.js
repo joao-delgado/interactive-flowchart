@@ -142,7 +142,7 @@ app.post('/api/flowcharts', requireAuth, upload.fields([
       await fs.writeFile(path.join(publicDir, 'timestamps.txt'), req.files.timestamps[0].buffer);
     }
     
-    // Create setup.json
+    // Create setup.json in both public (for build) and root (for API access)
     const setup = {
       id: id,
       title: req.body.title,
@@ -156,9 +156,11 @@ app.post('/api/flowcharts', requireAuth, upload.fields([
     };
     
     await fs.writeFile(path.join(publicDir, 'setup.json'), JSON.stringify(setup, null, 2));
+    await fs.writeFile(path.join(flowchartDir, 'setup.json'), JSON.stringify(setup, null, 2));
     
-    // Create intro.md
+    // Create intro.md in both locations
     await fs.writeFile(path.join(publicDir, 'intro.md'), req.body.intro || '');
+    await fs.writeFile(path.join(flowchartDir, 'intro.md'), req.body.intro || '');
     
     // Build the flowchart
     const { spawn } = require('child_process');
@@ -188,6 +190,14 @@ app.post('/api/flowcharts', requireAuth, upload.fields([
           await fs.rm(path.join(flowchartDir, 'public'), { recursive: true });
           await fs.unlink(path.join(flowchartDir, 'vite.config.js'));
           await fs.unlink(path.join(flowchartDir, 'package.json'));
+          
+          // Ensure setup.json and intro.md are preserved in root for API access
+          if (!await fs.access(path.join(flowchartDir, 'setup.json')).then(() => true).catch(() => false)) {
+            await fs.writeFile(path.join(flowchartDir, 'setup.json'), JSON.stringify(setup, null, 2));
+          }
+          if (!await fs.access(path.join(flowchartDir, 'intro.md')).then(() => true).catch(() => false)) {
+            await fs.writeFile(path.join(flowchartDir, 'intro.md'), req.body.intro || '');
+          }
           
         } catch (cleanupError) {
           console.error('Cleanup error:', cleanupError);
