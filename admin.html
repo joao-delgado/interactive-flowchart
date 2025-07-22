@@ -199,9 +199,23 @@
         <div class="header">
             <h1>Flowchart Admin Panel</h1>
             <p>Create and manage interactive flowcharts</p>
+            <div id="logout-section" style="display: none;">
+                <button onclick="logout()" class="btn" style="float: right; margin-top: -40px;">Logout</button>
+            </div>
         </div>
         
-        <div class="content">
+        <div id="login-section" class="content">
+            <h2>Admin Login</h2>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit" class="btn">Login</button>
+            </form>
+        </div>
+        
+        <div id="admin-content" class="content" style="display: none;">
             <div class="tabs">
                 <button class="tab active" onclick="switchTab('create')">Create Flowchart</button>
                 <button class="tab" onclick="switchTab('manage')">Manage Flowcharts</button>
@@ -295,6 +309,76 @@
 
     <script>
         let currentEditingId = null;
+        let isAuthenticated = false;
+
+        // Check authentication status on page load
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/auth-status');
+                const data = await response.json();
+                isAuthenticated = data.authenticated;
+                
+                if (isAuthenticated) {
+                    showAdminContent();
+                } else {
+                    showLoginForm();
+                }
+            } catch (error) {
+                showLoginForm();
+            }
+        }
+
+        function showLoginForm() {
+            document.getElementById('login-section').style.display = 'block';
+            document.getElementById('admin-content').style.display = 'none';
+            document.getElementById('logout-section').style.display = 'none';
+        }
+
+        function showAdminContent() {
+            document.getElementById('login-section').style.display = 'none';
+            document.getElementById('admin-content').style.display = 'block';
+            document.getElementById('logout-section').style.display = 'block';
+        }
+
+        // Handle login form submission
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const password = formData.get('password');
+            
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ password })
+                });
+                
+                if (response.ok) {
+                    isAuthenticated = true;
+                    showAdminContent();
+                    showMessage('Login successful!');
+                } else {
+                    showMessage('Invalid password', 'error');
+                }
+            } catch (error) {
+                showMessage('Login failed: ' + error.message, 'error');
+            }
+        });
+
+        // Handle logout
+        async function logout() {
+            try {
+                await fetch('/api/logout', { method: 'POST' });
+                isAuthenticated = false;
+                showLoginForm();
+                showMessage('Logged out successfully!');
+            } catch (error) {
+                showMessage('Logout failed: ' + error.message, 'error');
+            }
+        }
 
         function switchTab(tab) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -329,6 +413,11 @@
         document.getElementById('flowchart-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            if (!isAuthenticated) {
+                showMessage('Please log in first', 'error');
+                return;
+            }
+            
             const formData = new FormData(e.target);
             const loading = document.getElementById('loading');
             
@@ -346,6 +435,9 @@
                     showMessage(`Flowchart created successfully! URL: ${result.url}`);
                     e.target.reset();
                     updateFileInputLabels();
+                } else if (response.status === 401) {
+                    showMessage('Session expired. Please log in again.', 'error');
+                    showLoginForm();
                 } else {
                     showMessage(result.error || 'Failed to create flowchart', 'error');
                 }
@@ -357,8 +449,20 @@
         });
 
         async function loadFlowcharts() {
+            if (!isAuthenticated) {
+                showMessage('Please log in first', 'error');
+                return;
+            }
+            
             try {
                 const response = await fetch('/api/flowcharts');
+                
+                if (response.status === 401) {
+                    showMessage('Session expired. Please log in again.', 'error');
+                    showLoginForm();
+                    return;
+                }
+                
                 const flowcharts = await response.json();
                 
                 const listContainer = document.getElementById('flowcharts-list');
@@ -479,6 +583,9 @@
         setupFileInput('flowchart-file', 'Click to upload or drag and drop your flowchart.svg file');
         setupFileInput('narration-file', 'Click to upload or drag and drop your narration.mp3 file');
         setupFileInput('timestamps-file', 'Click to upload or drag and drop your timestamps.txt file');
+        
+        // Check authentication on page load
+        checkAuth();
     </script>
 </body>
 </html>

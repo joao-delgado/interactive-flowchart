@@ -4,19 +4,60 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs').promises;
 const { v4: uuidv4 } = require('uuid');
+const session = require('express-session');
 
 const app = express();
 const PORT = 5000;
 
+// Admin password (in production, use environment variables)
+const ADMIN_PASSWORD = 'admin123';
+
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(session({
+  secret: 'flowchart-admin-secret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 } // 24 hours
+}));
 app.use(express.static('public'));
 app.use('/flowcharts', express.static('flowcharts'));
 
 // Configure multer for file uploads
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
+
+// Authentication middleware
+function requireAuth(req, res, next) {
+  if (req.session.authenticated) {
+    next();
+  } else {
+    res.status(401).json({ error: 'Authentication required' });
+  }
+}
+
+// Login route
+app.post('/api/login', (req, res) => {
+  const { password } = req.body;
+  if (password === ADMIN_PASSWORD) {
+    req.session.authenticated = true;
+    res.json({ success: true });
+  } else {
+    res.status(401).json({ error: 'Invalid password' });
+  }
+});
+
+// Logout route
+app.post('/api/logout', (req, res) => {
+  req.session.destroy();
+  res.json({ success: true });
+});
+
+// Check authentication status
+app.get('/api/auth-status', (req, res) => {
+  res.json({ authenticated: !!req.session.authenticated });
+});
 
 // Ensure flowcharts directory exists
 async function ensureFlowchartsDir() {
@@ -28,7 +69,7 @@ async function ensureFlowchartsDir() {
 }
 
 // Get all flowcharts
-app.get('/api/flowcharts', async (req, res) => {
+app.get('/api/flowcharts', requireAuth, async (req, res) => {
   try {
     const flowchartsDir = await fs.readdir('flowcharts');
     const flowcharts = [];
@@ -56,7 +97,7 @@ app.get('/api/flowcharts', async (req, res) => {
 });
 
 // Create new flowchart
-app.post('/api/flowcharts', upload.fields([
+app.post('/api/flowcharts', requireAuth, upload.fields([
   { name: 'flowchart', maxCount: 1 },
   { name: 'narration', maxCount: 1 },
   { name: 'timestamps', maxCount: 1 }
@@ -154,7 +195,7 @@ app.post('/api/flowcharts', upload.fields([
 });
 
 // Delete flowchart
-app.delete('/api/flowcharts/:id', async (req, res) => {
+app.delete('/api/flowcharts/:id', requireAuth, async (req, res) => {
   try {
     const flowchartDir = path.join('flowcharts', req.params.id);
     await fs.rm(flowchartDir, { recursive: true });
@@ -165,7 +206,7 @@ app.delete('/api/flowcharts/:id', async (req, res) => {
 });
 
 // Get flowchart data for editing
-app.get('/api/flowcharts/:id/data', async (req, res) => {
+app.get('/api/flowcharts/:id/data', requireAuth, async (req, res) => {
   try {
     const flowchartDir = path.join('flowcharts', req.params.id);
     const setupData = await fs.readFile(path.join(flowchartDir, 'setup.json'), 'utf8');
