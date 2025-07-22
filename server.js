@@ -103,7 +103,7 @@ app.post('/api/flowcharts', requireAuth, upload.fields([
   { name: 'timestamps', maxCount: 1 }
 ]), async (req, res) => {
   try {
-    const id = uuidv4();
+    const id = req.body.flowchartId || uuidv4();
     const flowchartDir = path.join('flowcharts', id);
     
     // Create flowchart directory
@@ -136,7 +136,7 @@ app.post('/api/flowcharts', requireAuth, upload.fields([
     
     // Create setup.json
     const setup = {
-      id: req.body.flowchartId || id,
+      id: id,
       title: req.body.title,
       subtitle: req.body.subtitle,
       colors: {
