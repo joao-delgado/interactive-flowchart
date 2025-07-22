@@ -1,7 +1,7 @@
 {
-  "id": "testid1234567890",
-  "title": "rtaetaera",
-  "subtitle": "tararaw",
+  "id": "test-id",
+  "title": "test",
+  "subtitle": "this is a test",
   "colors": {
     "background-color": "#f9f4f0",
     "intro-background-color": "#f0e6db",
