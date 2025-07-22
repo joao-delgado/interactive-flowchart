@@ -102,6 +102,8 @@ app.post('/api/flowcharts', requireAuth, upload.fields([
   { name: 'timestamps', maxCount: 1 }
 ]), async (req, res) => {
   try {
+    console.log('Form data received:', req.body.flowchartId);
+    
     // Use custom ID if provided and not empty, otherwise generate UUID
     const id = req.body.flowchartId && req.body.flowchartId.trim() !== '' 
       ? req.body.flowchartId.trim() 
