@@ -102,12 +102,12 @@ app.post('/api/flowcharts', requireAuth, upload.fields([
   { name: 'timestamps', maxCount: 1 }
 ]), async (req, res) => {
   try {
-    // Get the custom flowchart ID from form data, trim whitespace, and use UUID if empty
-    const customId = req.body.flowchartId && req.body.flowchartId.trim() !== '' ? req.body.flowchartId.trim() : '';
-    const id = customId || uuidv4();
+    // Use custom ID if provided and not empty, otherwise generate UUID
+    const id = req.body.flowchartId && req.body.flowchartId.trim() !== '' 
+      ? req.body.flowchartId.trim() 
+      : uuidv4();
 
-    console.log(`Creating flowchart with ID: ${id}${customId ? ' (custom)' : ' (auto-generated)'}`);
-
+    console.log(`Creating flowchart with ID: ${id}`);
     const flowchartDir = path.join('flowcharts', id);
 
     // Create flowchart directory
