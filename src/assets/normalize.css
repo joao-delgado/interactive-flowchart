@@ -32,6 +32,18 @@ main {
   display: block;
 }
 
+
+blockquote {
+  background-color: rgba(0,0,0,0.05);
+  margin: 0;
+  border-radius: 8px;
+  padding: 10px 20px;
+}
+
+blockquote strong {
+  display: inline !important;
+}
+
 /**
  * Correct the font size and margin on `h1` elements within `section` and
  * `article` contexts in Chrome, Firefox, and Safari.

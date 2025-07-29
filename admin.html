@@ -4,55 +4,123 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flowchart Admin</title>
+    <link rel="stylesheet" href="src/assets/fonts/Agrandir-Variable.ttf">
     <style>
+
+        html {
+            scroll-behavior: smooth;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        body {
-            font-family: Arial, sans-serif;
-            background: #f5f5f5;
-            padding: 20px;
+        *:focus {
+            outline-color: #134d43;
         }
+
+        ::selection {
+            color: white;
+            background-color: #134d43;
+        }
+
+
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
+        h1 {
+            color: #2C2721;
+            margin-top: -5px;
+            margin-bottom: -5px;
+        }
+
+        h2 {
+            margin-bottom: 2rem;
+        }
+
+        body {
+            
+            font-family: 'Agrandir Variable';
+            font-weight: 400;
+            background: #F9F4F0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        #login-section {
+                        max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            border: solid 1px #2C2721;
+        }
+
 
         .container {
-            max-width: 1200px;
+            width: 100%;
+            max-width: 1000px;
             margin: 0 auto;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+
+
+            color: #2C2721;
+            transition: all 200ms ease-in;
+
         }
+
 
         .header {
-            background: #176659;
-            color: white;
+            color: #176659;
             padding: 20px;
-            border-radius: 8px 8px 0 0;
+            margin-bottom: 50px;
         }
 
-        .content {
+        #create-tab, 
+        #manage-tab {
             padding: 20px;
+            background: white;
+            border: solid 1px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 150px;
         }
 
         .tabs {
             display: flex;
-            border-bottom: 1px solid #ddd;
-            margin-bottom: 20px;
+            align-items: flex-end;
+            background-color: transparent;
         }
 
         .tab {
-            padding: 10px 20px;
+            padding: 16px 40px;
+            height: fit-content;
             cursor: pointer;
-            border: none;
-            background: none;
-            border-bottom: 2px solid transparent;
+            border: solid 1px #2C2721;
+            background-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(1px);
         }
 
-        .tab.active {
-            border-bottom-color: #176659;
-            color: #176659;
+        .tab:last-child {
+            transform: translateX(-1px) translateY(1px);
+        }
+
+        .tab.active{
+            padding: 20px 40px;
+            position: relative;
+            background-color: rgba(255, 255, 255, 1);
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 5px;
+            background-color: white;
+            bottom: -2px;
+            left: 0;
         }
 
         .tab-content {
@@ -64,13 +132,23 @@
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         label {
             display: block;
             margin-bottom: 5px;
             font-weight: bold;
+        }
+
+        .label-desc {
+            font-size: 13px;
+            color: rgba(44,39,33,0.5);
+            margin: -5px 0 5px 0;
+        }
+
+        label span {
+            color: #134d43;
         }
 
         input, textarea, select {
@@ -81,11 +159,28 @@
             font-size: 14px;
         }
 
+
+
         input[type="color"] {
-            width: 60px;
-            height: 40px;
-            padding: 0;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 58px;
+            height: 60px;
+            background-color: transparent;
             border: none;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        input[type="color"]::-webkit-color-swatch {
+            border-radius: 100%;
+            border: solid 1px #2C2721;
+        }
+
+        input[type="color"]::-moz-color-swatch {
+            border-radius: 100%;
+            border: solid 1px #2C2721;
         }
 
         .color-group {
@@ -97,12 +192,26 @@
         .color-input {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 15px;
         }
 
+        .color-input label {
+            margin-bottom: -5px;
+        }
+
+
         textarea {
-            min-height: 100px;
+            min-height: 200px;
             resize: vertical;
+        }
+
+        .a-link {
+            width: fit-content;
+            font-size: 14px;
+            color: #134d43;
+            text-decoration: underline;
+            display: block;
+            margin: -5px 0px 10px 0px;
         }
 
         .file-input {
@@ -111,11 +220,12 @@
             text-align: center;
             border-radius: 4px;
             cursor: pointer;
-            transition: border-color 0.3s;
+            transition: all 0.3s;
         }
 
         .file-input:hover {
             border-color: #176659;
+            background-color: rgba(206,220,202,0.2);
         }
 
         .file-input.dragover {
@@ -123,15 +233,22 @@
             background: #f0f9f7;
         }
 
+        .file-selected {
+            background-color: rgba(206,220,202,0.2);
+            border-color: #176659;
+            border-style: solid;
+        }
+
         .btn {
             background: #176659;
             color: white;
-            padding: 12px 24px;
+            padding: 12px 24px 10px 24px;
             border: none;
-            border-radius: 4px;
             cursor: pointer;
             font-size: 16px;
             transition: background 0.3s;
+            font-family: 'Agrandir Variable';
+            text-decoration: none;
         }
 
         .btn:hover {
@@ -153,21 +270,78 @@
         }
 
         .flowchart-card {
-            border: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #2C2721;
+            background-color: rgba(249,244,240,0.4);
+            justify-content: space-between;
             border-radius: 8px;
-            padding: 15px;
-            background: #f9f9f9;
         }
 
+        .card-info {
+            padding: 15px;
+        }
+
+        .flowchart-card h3 {
+            font-size: 18px;
+
+        }
+
+
+        .card-subtitle {
+            font-size: 15px;
+            margin-bottom: 10px;
+            color: #176659;
+        }
+
+        .card-id {
+            font-size: 12px;
+            opacity: 0.5;
+        }
+
+
         .flowchart-actions {
+            padding: 15px;
             display: flex;
             gap: 10px;
             margin-top: 10px;
+            justify-content: space-between;
+        }
+
+        .flowcharts a {
+            text-decoration: none;
+        }
+
+        #flowchartId::placeholder {
+            color: rgba(44,39,33,0.5);
         }
 
         .btn-small {
-            padding: 5px 10px;
+            padding: 10px 5px;
             font-size: 12px;
+        }
+
+        .view-btn {
+            padding: 10px 30px;
+        }
+
+        .view-btn:hover {
+            background: #134d43;
+        }
+
+        .edit-btn {
+            background-color: transparent !important;
+            color: #176659 !important;
+        }
+
+        .delete-btn {
+            background-color: transparent !important;
+            color: #F2623D !important;
+        }
+
+        .edit-btn:hover, 
+        .delete-btn:hover {
+            text-decoration: underline;
         }
 
         .loading {
@@ -192,136 +366,174 @@
         }
 
         .success {
-            background: #d4edda;
-            color: #155724;
-            padding: 10px;
+            background: #CEDCCA;
+            color: #5B8F6A;
+            padding: 10px 10px 8px 10px;
             border-radius: 4px;
-            margin-bottom: 20px;
+            margin-top: 20px;
         }
 
         .error {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 10px;
+            background: #FCCDA4;
+            color: #F2623D;
+            padding: 10px 10px 8px 10px;
             border-radius: 4px;
-            margin-bottom: 20px;
+            margin-top: 20px;
         }
+
+        footer {
+            color: #685E52;
+            font-size: 13px;
+            text-align: center;
+            margin: 20px 0px;
+        }
+
+        footer a {
+            color: #176659;
+        }
+
+
     </style>
 </head>
 <body>
-    <div class="container">
+
+    <div>
         <div class="header">
             <h1>Flowchart Admin Panel</h1>
             <p>Create and manage interactive flowcharts</p>
             <div id="logout-section" style="display: none;">
-                <button onclick="logout()" class="btn" style="float: right; margin-top: -40px;">Logout</button>
+                <button onclick="logout()" class="btn" style="float: right; margin-top: -60px;">Logout</button>
             </div>
         </div>
 
-        <div id="login-section" class="content">
-            <h2>Admin Login</h2>
-            <form id="login-form">
-                <div class="form-group">
-                    <label for="password">Password:</label>
-                    <input type="password" id="password" name="password" required>
-                </div>
-                <button type="submit" class="btn">Login</button>
-            </form>
-        </div>
 
-        <div id="admin-content" class="content" style="display: none;">
+        <div class="container">
+
+
+            <div id="login-section" class="content">
+                <h2>Admin Login</h2>
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="password">Password:</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <button type="submit" class="btn">Login</button>
+                </form>
+            </div>
+
+
+            <div id="admin-content" class="content" style="display: none;">
+
+
             <div class="tabs">
                 <button class="tab active" onclick="switchTab('create')">Create Flowchart</button>
                 <button class="tab" onclick="switchTab('manage')">Manage Flowcharts</button>
             </div>
 
-            <div id="create-tab" class="tab-content active">
-                <h2>Create New Flowchart</h2>
-                <form id="flowchart-form" enctype="multipart/form-data">
-                    <div class="form-group">
-                        <label>Flowchart SVG *</label>
-                        <div class="file-input" onclick="document.getElementById('flowchart-file').click()">
-                            <input type="file" id="flowchart-file" name="flowchart" accept=".svg" style="display: none;" required>
-                            <p>Click to upload or drag and drop your flowchart.svg file</p>
+
+                <div id="create-tab" class="tab-content active">
+                    <h2>Create New Flowchart</h2>
+                    <form id="flowchart-form" enctype="multipart/form-data">
+                        
+
+                        <div class="form-group">
+                            <label for="title">Title <span>*</span></label>
+                            <input type="text" id="title" name="title" required>
                         </div>
-                    </div>
 
-                    <div class="form-group">
-                        <label>Audio Narration (optional)</label>
-                        <div class="file-input" onclick="document.getElementById('narration-file').click()">
-                            <input type="file" id="narration-file" name="narration" accept=".mp3" style="display: none;">
-                            <p>Click to upload or drag and drop your narration.mp3 file</p>
+                        <div class="form-group">
+                            <label for="subtitle">Subtitle</label>
+                            <input type="text" id="subtitle" name="subtitle">
                         </div>
-                    </div>
 
-                    <div class="form-group">
-                        <label>Timestamps (optional)</label>
-                        <div class="file-input" onclick="document.getElementById('timestamps-file').click()">
-                            <input type="file" id="timestamps-file" name="timestamps" accept=".txt" style="display: none;">
-                            <p>Click to upload or drag and drop your timestamps.txt file</p>
+                        <div class="form-group">
+                            <label for="flowchartId">Flowchart ID (optional)</label>
+                            <input type="text" id="flowchartId" name="flowchartId" placeholder="Leave empty for auto-generated ID">
                         </div>
-                    </div>
 
-                    <div class="form-group">
-                        <label for="title">Title *</label>
-                        <input type="text" id="title" name="title" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="subtitle">Subtitle</label>
-                        <input type="text" id="subtitle" name="subtitle">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="flowchartId">Flowchart ID (optional)</label>
-                        <input type="text" id="flowchartId" name="flowchartId" placeholder="Leave empty for auto-generated ID">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Colors</label>
-                        <div class="color-group">
-                            <div class="color-input">
-                                <input type="color" id="backgroundColor" name="backgroundColor" value="#F9F4F0">
-                                <label for="backgroundColor">Background Color</label>
-                            </div>
-                            <div class="color-input">
-                                <input type="color" id="introBackgroundColor" name="introBackgroundColor" value="#F0E6DB">
-                                <label for="introBackgroundColor">Intro Background</label>
-                            </div>
-                            <div class="color-input">
-                                <input type="color" id="textColor" name="textColor" value="#443C33">
-                                <label for="textColor">Text Color</label>
-                            </div>
-                            <div class="color-input">
-                                <input type="color" id="accentColor" name="accentColor" value="#176659">
-                                <label for="accentColor">Accent Color</label>
+                        <div class="form-group">
+                            <label>Flowchart SVG <span>*</span></label>
+                            <p class="label-desc">File name must be "flowchart.svg"</p>
+                            <p><a href="https://www.figma.com/design/xpYNjeATszJBLULDkcYe2p/Flowchart?node-id=0-1&t=wGedq8eHQAuKQjRm-1 " target="_blank" class="a-link">Create new Flowchart SVG</a></p>
+                            <div class="file-input" onclick="document.getElementById('flowchart-file').click()">
+                                <input type="file" id="flowchart-file" name="flowchart" accept=".svg" style="display: none;" required>
+                                <p>Click to upload or drag and drop your flowchart.svg file</p>
                             </div>
                         </div>
+
+                        <div class="form-group">
+                            <label>Audio Narration <span>*</span></label>
+                            <p class="label-desc">File name must be "narration.mp3"</p>
+                            <div class="file-input" onclick="document.getElementById('narration-file').click()">
+                                <input type="file" id="narration-file" name="narration" accept=".mp3" style="display: none;">
+                                <p>Click to upload or drag and drop your narration.mp3 file</p>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Timestamps <span>*</span></label>
+                            <p class="label-desc">File name must be "timestamps.txt"</p>
+                            <div class="file-input" onclick="document.getElementById('timestamps-file').click()">
+                                <input type="file" id="timestamps-file" name="timestamps" accept=".txt" style="display: none;">
+                                <p>Click to upload or drag and drop your timestamps.txt file</p>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Colors</label>
+                            <div class="color-group">
+                                <div class="color-input">
+                                    <input type="color" id="backgroundColor" name="backgroundColor" value="#F9F4F0">
+                                    <label for="backgroundColor">Background Color</label>
+                                </div>
+                                <div class="color-input">
+                                    <input type="color" id="introBackgroundColor" name="introBackgroundColor" value="#F0E6DB">
+                                    <label for="introBackgroundColor">Intro Background</label>
+                                </div>
+                                <div class="color-input">
+                                    <input type="color" id="textColor" name="textColor" value="#443C33">
+                                    <label for="textColor">Text Color</label>
+                                </div>
+                                <div class="color-input">
+                                    <input type="color" id="accentColor" name="accentColor" value="#176659">
+                                    <label for="accentColor">Accent Color</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="intro">Introduction Text (Markdown)</label>
+                            <p><a href="https://www.markdownguide.org/basic-syntax/" target="_blank" class="a-link">What is markdown?</a></p>
+                            <textarea id="intro" name="intro" placeholder="Enter your introduction text in Markdown format..."></textarea>
+                        </div>
+
+                        <button type="submit" class="btn">Create Flowchart</button>
+                    </form>
+
+                    <div id="loading" class="loading">
+                        <p>Creating flowchart... This may take a few moments.</p>
                     </div>
-
-                    <div class="form-group">
-                        <label for="intro">Introduction Text (Markdown)</label>
-                        <textarea id="intro" name="intro" placeholder="Enter your introduction text in Markdown format..."></textarea>
-                    </div>
-
-                    <button type="submit" class="btn">Create Flowchart</button>
-                </form>
-
-                <div id="loading" class="loading">
-                    <p>Creating flowchart... This may take a few moments.</p>
                 </div>
-            </div>
 
-            <div id="manage-tab" class="tab-content">
-                <h2>Manage Flowcharts</h2>
-                <div id="flowcharts-list" class="flowchart-list">
-                    <!-- Flowcharts will be loaded here -->
+                <div id="manage-tab" class="tab-content">
+                    <h2>Manage Flowcharts</h2>
+                    <div id="flowcharts-list" class="flowchart-list">
+                        <!-- Flowcharts will be loaded here -->
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <footer>
+        <div class="copyright">© <span id="year"></span> with company</div>
+        <div>Powered by <a href="https://github.com/uclab-potsdam/interactive-flowchart" target="_blank">Interactive Flowchart</a></div>
+    </footer>
+
     <script>
+        // Get year
+        document.getElementById("year").innerHTML = new Date().getFullYear();
+
         let currentEditingId = null;
         let isAuthenticated = false;
 
@@ -417,7 +629,8 @@
             messageDiv.textContent = message;
 
             const content = document.querySelector('.content');
-            content.insertBefore(messageDiv, content.firstChild);
+            // content.insertBefore(messageDiv, content.firstChild);
+            content.appendChild(messageDiv, content.firstChild);
 
             setTimeout(() => {
                 messageDiv.remove();
@@ -529,13 +742,17 @@
 
                 listContainer.innerHTML = flowcharts.map(flowchart => `
                     <div class="flowchart-card">
-                        <h3>${flowchart.title}</h3>
-                        <p>${flowchart.subtitle || 'No subtitle'}</p>
-                        <p><strong>ID:</strong> ${flowchart.id}</p>
+                        <div class="card-info">
+                            <h3>${flowchart.title}</h3>
+                            <p class="card-subtitle">${flowchart.subtitle || ''}</p>
+                            <p class="card-id"><span><strong>ID:</strong></span> ${flowchart.id}</p>
+                        </div>
                         <div class="flowchart-actions">
-                            <a href="${flowchart.url}" target="_blank" class="btn btn-small">View</a>
-                            <button onclick="editFlowchart('${flowchart.id}')" class="btn btn-small">Edit</button>
-                            <button onclick="deleteFlowchart('${flowchart.id}')" class="btn btn-small btn-danger">Delete</button>
+                            <a href="${flowchart.url}" target="_blank" class="btn btn-small view-btn">View</a>
+                            <div>
+                                <button onclick="editFlowchart('${flowchart.id}')" class="btn btn-small edit-btn">Edit</button>
+                                <button onclick="deleteFlowchart('${flowchart.id}')" class="btn btn-small delete-btn">Delete</button>
+                            </div>
                         </div>
                     </div>
                 `).join('');
@@ -601,6 +818,7 @@
                 const fileName = e.target.files[0]?.name;
                 if (fileName) {
                     container.querySelector('p').textContent = `Selected: ${fileName}`;
+                    container.classList.add('file-selected');
                 } else {
                     container.querySelector('p').textContent = labelText;
                 }
