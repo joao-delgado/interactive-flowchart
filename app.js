@@ -139,7 +139,7 @@ app.post('/api/flowcharts', requireAuth, upload.fields([
     // Copy main files
     await fs.copyFile('index.html', path.join(flowchartDir, 'index.html'));
     await fs.copyFile('vite.config.js', path.join(flowchartDir, 'vite.config.js'));
-    await fs.copyFile('vue-package.json', path.join(flowchartDir, 'package.json'));
+    await fs.copyFile('package.json', path.join(flowchartDir, 'package.json'));
 
     // Create public directory in flowchart
     const publicDir = path.join(flowchartDir, 'public');
