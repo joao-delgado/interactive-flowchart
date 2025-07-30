@@ -20,7 +20,11 @@ app.use(session({
   saveUninitialized: false,
   cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 } // 24 hours
 }));
-app.use(express.static('public'));
+
+
+// app.use(express.static('public'));
+app.use(express.static(__dirname + '/public'));
+
 app.use('/flowcharts', express.static('flowcharts'));
 
 // Configure multer for file uploads

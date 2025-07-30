@@ -304,7 +304,7 @@ body {
 
 #app {
   display: contents;
-  font-family: 'Agrandir Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+  font-family: 'Agrandir Variable', sans-serif;
   font-size: 15px;
   text-rendering: optimizeLegibility;
   color: rgb(var(--text-color));
